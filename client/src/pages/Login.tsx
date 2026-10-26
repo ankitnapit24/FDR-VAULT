@@ -112,50 +112,52 @@ export const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F6F8FB] flex flex-col justify-between selection:bg-[#EAF2FB] selection:text-[#183B63] relative overflow-x-hidden">
-      {/* Ambient background glows for visual polish */}
-      <div className="absolute top-0 left-1/4 w-[480px] h-[480px] bg-[#3567A5]/8 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute bottom-10 right-1/4 w-[480px] h-[480px] bg-[#2A9D8F]/8 rounded-full blur-3xl pointer-events-none -z-10" />
+      {/* Ambient background glows for visual polish - hidden on small mobile to prevent any horizontal overflow */}
+      <div className="hidden sm:block absolute top-0 left-1/4 w-[480px] h-[480px] bg-[#3567A5]/8 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="hidden sm:block absolute bottom-10 right-1/4 w-[480px] h-[480px] bg-[#2A9D8F]/8 rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Main Unified Container */}
-      <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex-1 flex flex-col justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-center">
+      <main className="w-full max-w-[1240px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 flex-1 flex flex-col justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 xl:gap-12 items-center">
           
           {/* ========================================================= */}
-          {/* LEFT COLUMN: Branding & Visual Storytelling (53% width)   */}
+          {/* BRANDING & VISUAL STORYTELLING COLUMN                     */}
+          {/* Mobile: Top stacked, Tablet: Centered max-w-xl,           */}
+          {/* Desktop: 58% width (7-cols)                               */}
           {/* ========================================================= */}
-          <div className="lg:col-span-7 flex flex-col justify-center">
+          <div className="w-full max-w-xl lg:max-w-none mx-auto lg:mx-0 lg:col-span-7 flex flex-col justify-center">
             {/* Top Brand Identity */}
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#183B63] to-[#3567A5] flex items-center justify-center text-white shadow-md shadow-[#183B63]/20 ring-1 ring-white/60">
+            <div className="flex items-center space-x-3 mb-3 sm:mb-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#183B63] to-[#3567A5] flex items-center justify-center text-white shadow-md shadow-[#183B63]/20 ring-1 ring-white/60 shrink-0">
                 <ShieldCheck className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <span className="text-lg font-extrabold text-[#183B63] tracking-tight block leading-tight">
+              <div className="min-w-0 flex-1">
+                <span className="text-base sm:text-lg font-extrabold text-[#183B63] tracking-tight block leading-tight truncate">
                   FDR VAULT
                 </span>
-                <span className="text-xs text-[#667085] font-medium leading-tight">
+                <span className="text-[11px] sm:text-xs text-[#667085] font-medium leading-tight block truncate">
                   All India Council for Technical Education (AICTE)
                 </span>
               </div>
             </div>
 
             {/* Headline and Description */}
-            <div className="mb-4">
-              <h1 className="text-2xl sm:text-3xl xl:text-[32px] font-extrabold text-[#182230] leading-tight tracking-tight">
+            <div className="mb-3 sm:mb-4">
+              <h1 className="text-xl sm:text-2xl md:text-3xl xl:text-[32px] font-extrabold text-[#182230] leading-snug tracking-tight">
                 Smarter FDR Management.{' '}
                 <span className="bg-gradient-to-r from-[#183B63] via-[#3567A5] to-[#2A9D8F] bg-clip-text text-transparent">
                   Complete Transparency.
                 </span>
               </h1>
-              <p className="mt-2 text-xs sm:text-sm text-[#667085] leading-relaxed max-w-xl">
+              <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-[#667085] leading-relaxed max-w-xl">
                 A centralized platform for secure deposit tracking, document scrutiny, maturity monitoring, and release
                 workflows across AICTE-approved institutions nationwide.
               </p>
             </div>
 
             {/* Isometric Visual Security Illustration */}
-            <div className="w-full max-w-[460px] mx-auto lg:mx-0 my-1">
-              <div className="rounded-xl p-3 bg-white/70 backdrop-blur-sm border border-[#E2E8F0]/80 shadow-sm">
+            <div className="w-full max-w-[280px] sm:max-w-[380px] lg:max-w-[460px] mx-auto lg:mx-0 my-1 sm:my-2">
+              <div className="rounded-xl p-2 sm:p-3 bg-white/70 backdrop-blur-sm border border-[#E2E8F0]/80 shadow-sm overflow-hidden">
                 <svg
                   viewBox="0 0 520 290"
                   className="w-full h-auto drop-shadow-sm select-none"
@@ -367,41 +369,49 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
-            {/* Three Compact Feature Benefit Cards */}
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-3 mt-3">
-              <div className="bg-white/80 rounded-xl p-2.5 sm:p-3 border border-[#E2E8F0] shadow-sm hover:border-[#3567A5]/30 transition-all">
-                <div className="w-6 h-6 rounded-lg bg-[#EAF2FB] flex items-center justify-center text-[#183B63] mb-1.5">
+            {/* Three Compact Feature Benefit Cards: Stacks on mobile <480px, 3-cols on 480px+ */}
+            <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-2 sm:gap-3 mt-2 sm:mt-3">
+              <div className="bg-white/80 rounded-xl p-2.5 sm:p-3 border border-[#E2E8F0] shadow-xs hover:border-[#3567A5]/30 transition-all flex min-[480px]:flex-col items-center min-[480px]:items-start space-x-2.5 min-[480px]:space-x-0">
+                <div className="w-6 h-6 rounded-lg bg-[#EAF2FB] flex items-center justify-center text-[#183B63] min-[480px]:mb-1.5 shrink-0">
                   <Shield className="w-3.5 h-3.5 text-[#3567A5]" />
                 </div>
-                <h4 className="text-[11px] sm:text-xs font-bold text-[#182230]">Secure Management</h4>
-                <p className="text-[10px] text-[#667085] mt-0.5 leading-tight">Encrypted records & lien logs</p>
+                <div className="min-w-0">
+                  <h4 className="text-[11px] sm:text-xs font-bold text-[#182230] leading-tight">Secure Management</h4>
+                  <p className="text-[10px] text-[#667085] mt-0.5 leading-tight">Encrypted records & lien logs</p>
+                </div>
               </div>
 
-              <div className="bg-white/80 rounded-xl p-2.5 sm:p-3 border border-[#E2E8F0] shadow-sm hover:border-[#2A9D8F]/30 transition-all">
-                <div className="w-6 h-6 rounded-lg bg-[#E6F4EA] flex items-center justify-center text-[#2A9D8F] mb-1.5">
+              <div className="bg-white/80 rounded-xl p-2.5 sm:p-3 border border-[#E2E8F0] shadow-xs hover:border-[#2A9D8F]/30 transition-all flex min-[480px]:flex-col items-center min-[480px]:items-start space-x-2.5 min-[480px]:space-x-0">
+                <div className="w-6 h-6 rounded-lg bg-[#E6F4EA] flex items-center justify-center text-[#2A9D8F] min-[480px]:mb-1.5 shrink-0">
                   <Clock className="w-3.5 h-3.5 text-[#2A9D8F]" />
                 </div>
-                <h4 className="text-[11px] sm:text-xs font-bold text-[#182230]">Maturity Tracking</h4>
-                <p className="text-[10px] text-[#667085] mt-0.5 leading-tight">Automated alerts at 90/60/30 days</p>
+                <div className="min-w-0">
+                  <h4 className="text-[11px] sm:text-xs font-bold text-[#182230] leading-tight">Maturity Tracking</h4>
+                  <p className="text-[10px] text-[#667085] mt-0.5 leading-tight">Automated alerts at 90/60/30 days</p>
+                </div>
               </div>
 
-              <div className="bg-white/80 rounded-xl p-2.5 sm:p-3 border border-[#E2E8F0] shadow-sm hover:border-[#E9A23B]/30 transition-all">
-                <div className="w-6 h-6 rounded-lg bg-[#FEF3D6] flex items-center justify-center text-[#E9A23B] mb-1.5">
+              <div className="bg-white/80 rounded-xl p-2.5 sm:p-3 border border-[#E2E8F0] shadow-xs hover:border-[#E9A23B]/30 transition-all flex min-[480px]:flex-col items-center min-[480px]:items-start space-x-2.5 min-[480px]:space-x-0">
+                <div className="w-6 h-6 rounded-lg bg-[#FEF3D6] flex items-center justify-center text-[#E9A23B] min-[480px]:mb-1.5 shrink-0">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#E9A23B]" />
                 </div>
-                <h4 className="text-[11px] sm:text-xs font-bold text-[#182230]">Transparent Workflows</h4>
-                <p className="text-[10px] text-[#667085] mt-0.5 leading-tight">Role-scoped scrutiny & audit trail</p>
+                <div className="min-w-0">
+                  <h4 className="text-[11px] sm:text-xs font-bold text-[#182230] leading-tight">Transparent Workflows</h4>
+                  <p className="text-[10px] text-[#667085] mt-0.5 leading-tight">Role-scoped scrutiny & audit trail</p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* ========================================================= */}
-          {/* RIGHT COLUMN: Integrated Enterprise Login Panel (47%)    */}
+          {/* LOGIN PANEL COLUMN                                        */}
+          {/* Mobile/Tablet: Centered max-w-md / max-w-lg               */}
+          {/* Desktop: 42% width (5-cols)                               */}
           {/* ========================================================= */}
-          <div className="lg:col-span-5 flex flex-col justify-center">
-            <div className="w-full bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 sm:p-7 xl:p-8">
+          <div className="w-full max-w-md sm:max-w-lg lg:max-w-none mx-auto lg:col-span-5 flex flex-col justify-center">
+            <div className="w-full bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-4 sm:p-6 lg:p-7 xl:p-8">
               {/* Header */}
-              <div className="mb-5">
+              <div className="mb-4 sm:mb-5">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#EAF2FB] text-[#183B63] border border-[#3567A5]/20">
                     SECURE PORTAL ACCESS
@@ -420,10 +430,10 @@ export const Login: React.FC = () => {
               {error && (
                 <div
                   role="alert"
-                  className="mb-4 p-3 bg-[#FCE8E6] border border-[#F5B5B0] rounded-xl flex items-start space-x-2 text-xs text-[#C53030] shadow-sm"
+                  className="mb-4 p-3 bg-[#FCE8E6] border border-[#F5B5B0] rounded-xl flex items-start space-x-2 text-xs text-[#C53030] shadow-sm animate-in fade-in"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span className="leading-relaxed font-medium">{error}</span>
+                  <span className="leading-relaxed font-medium break-words">{error}</span>
                 </div>
               )}
 
@@ -446,7 +456,7 @@ export const Login: React.FC = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@aicte.gov.in or college domain"
-                      className="w-full pl-9 pr-3.5 py-2 text-sm bg-white border border-[#E2E8F0] rounded-lg text-[#182230] placeholder-[#667085]/60 focus:outline-none focus:ring-2 focus:ring-[#3567A5]/30 focus:border-[#3567A5] transition-all shadow-sm"
+                      className="w-full pl-9 pr-3.5 py-2.5 text-base sm:text-sm bg-white border border-[#E2E8F0] rounded-lg text-[#182230] placeholder-[#667085]/60 focus:outline-none focus:ring-2 focus:ring-[#3567A5]/30 focus:border-[#3567A5] transition-all shadow-xs"
                     />
                   </div>
                 </div>
@@ -471,13 +481,13 @@ export const Login: React.FC = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full pl-9 pr-9 py-2 text-sm bg-white border border-[#E2E8F0] rounded-lg text-[#182230] placeholder-[#667085]/60 focus:outline-none focus:ring-2 focus:ring-[#3567A5]/30 focus:border-[#3567A5] transition-all shadow-sm"
+                      className="w-full pl-9 pr-10 py-2.5 text-base sm:text-sm bg-white border border-[#E2E8F0] rounded-lg text-[#182230] placeholder-[#667085]/60 focus:outline-none focus:ring-2 focus:ring-[#3567A5]/30 focus:border-[#3567A5] transition-all shadow-xs"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#667085] hover:text-[#182230] focus:outline-none"
+                      className="absolute inset-y-0 right-0 pr-3 min-w-[40px] flex items-center justify-center text-[#667085] hover:text-[#182230] focus:outline-none cursor-pointer"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -488,7 +498,7 @@ export const Login: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isLoading || !email.trim() || !password}
-                  className="w-full mt-1 inline-flex items-center justify-center space-x-2 py-2.5 px-4 bg-gradient-to-r from-[#183B63] to-[#3567A5] hover:from-[#132E4D] hover:to-[#2B5489] text-white text-sm font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3567A5]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full mt-1 min-h-[44px] inline-flex items-center justify-center space-x-2 py-2.5 px-4 bg-gradient-to-r from-[#183B63] to-[#3567A5] hover:from-[#132E4D] hover:to-[#2B5489] text-white text-sm font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3567A5]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isLoading ? (
                     <>
@@ -521,7 +531,8 @@ export const Login: React.FC = () => {
                   <span className="text-[10px] text-[#667085]">One-click autofill</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Demo Cards Grid: 1 column on narrow mobile (<440px), 2 columns on 440px+ */}
+                <div className="grid grid-cols-1 min-[440px]:grid-cols-2 gap-2">
                   {DEMO_ACCOUNTS.map((acc) => {
                     const Icon = acc.icon;
                     const isSelected = selectedDemo === acc.email;
@@ -531,18 +542,18 @@ export const Login: React.FC = () => {
                         key={acc.email}
                         type="button"
                         onClick={() => handleSelectDemo(acc)}
-                        className={`text-left p-2 rounded-xl border transition-all flex flex-col justify-between ${
+                        className={`text-left p-2.5 rounded-xl border transition-all flex flex-col justify-between min-h-[46px] cursor-pointer ${
                           isSelected
                             ? 'border-[#3567A5] bg-[#EAF2FB] shadow-xs ring-1 ring-[#3567A5]'
-                            : 'border-[#E2E8F0] bg-[#FAFBFD] hover:bg-[#F2F7FC] hover:border-[#3567A5]/40'
+                            : 'border-[#E2E8F0] bg-[#FAFBFD] hover:bg-[#F2F7FC] hover:border-[#3567A5]/40 active:bg-[#EAF2FB]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-0.5">
-                          <div className="flex items-center space-x-1.5 truncate mr-1">
+                          <div className="flex items-center space-x-1.5 truncate mr-1 min-w-0">
                             <Icon className="w-3.5 h-3.5 text-[#183B63] shrink-0" />
                             <span className="text-[11px] font-bold text-[#182230] truncate">{acc.role}</span>
                           </div>
-                          <span className={`text-[8.5px] font-semibold px-1 py-0.5 rounded border shrink-0 ${acc.badgeColor}`}>
+                          <span className={`text-[8.5px] font-semibold px-1.5 py-0.5 rounded border shrink-0 ${acc.badgeColor}`}>
                             {acc.badge}
                           </span>
                         </div>
@@ -557,7 +568,7 @@ export const Login: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Subtle Institutional Footer */}
       <footer className="w-full py-3 px-4 text-center text-[11px] text-[#667085] border-t border-[#E2E8F0]/70 bg-white/50 backdrop-blur-xs">
