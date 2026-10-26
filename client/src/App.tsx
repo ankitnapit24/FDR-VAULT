@@ -75,9 +75,23 @@ export const App: React.FC = () => {
               <Route path="institutions" element={<InstitutionsList />} />
               <Route path="institutions/:id" element={<InstitutionDetails />} />
               <Route path="fdrs" element={<FDRList />} />
-              <Route path="fdrs/register" element={<FDRRegister />} />
+              <Route
+                path="fdrs/register"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'officer', 'institution']}>
+                    <FDRRegister />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="fdrs/:id" element={<FDRDetails />} />
-              <Route path="documents/upload" element={<DocumentUploadReview />} />
+              <Route
+                path="documents/upload"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'officer', 'institution']}>
+                    <DocumentUploadReview />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="documents/verification-queue"
                 element={
@@ -90,12 +104,33 @@ export const App: React.FC = () => {
               <Route path="renewals" element={<RenewalRequests />} />
               <Route path="refunds" element={<RefundRequestsList />} />
               <Route path="refunds/:id" element={<RefundRequestDetails />} />
-              <Route path="bank-verification" element={<BankVerificationHub />} />
-              <Route path="trust-exposure" element={<TrustExposureDashboard />} />
+              <Route
+                path="bank-verification"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'officer']}>
+                    <BankVerificationHub />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="trust-exposure"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'officer', 'trust']}>
+                    <TrustExposureDashboard />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="policies" element={<PolicyAdequacyPage />} />
               <Route path="notifications" element={<AlertsNotifications />} />
               <Route path="reports" element={<ReportsAnalytics />} />
-              <Route path="audit-logs" element={<AuditLogs />} />
+              <Route
+                path="audit-logs"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'officer']}>
+                    <AuditLogs />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="users"
                 element={
@@ -104,7 +139,14 @@ export const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route path="settings" element={<Settings />} />
+              <Route
+                path="settings"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'officer']}>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="unauthorized" element={<Unauthorized />} />
               <Route path="*" element={<NotFound />} />
             </Route>

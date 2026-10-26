@@ -11,9 +11,12 @@ const router = Router();
 
 router.use(authenticate);
 
+// IFSC lookup is public for authenticated users registering FDRs
 router.get('/validate-ifsc/:ifsc', validateIFSC);
-router.get('/', getVerificationTickets);
-router.post('/', createTicket);
+
+// Bank verification liaison management is restricted to AICTE Admin & Scrutiny Officers
+router.get('/', authorizeRoles('admin', 'officer'), getVerificationTickets);
+router.post('/', authorizeRoles('admin', 'officer'), createTicket);
 router.patch('/:id/status', authorizeRoles('admin', 'officer'), updateTicketStatus);
 
 export default router;

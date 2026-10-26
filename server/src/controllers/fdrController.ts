@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { FDR } from '../models/FDR.js';
 import { AppDocument } from '../models/Document.js';
-import { AuthRequest, enforceInstitutionScope } from '../middleware/authMiddleware.js';
+import { AuthRequest, enforceInstitutionScope, getScopedInstitutionIds } from '../middleware/authMiddleware.js';
 import { logAudit } from '../middleware/auditMiddleware.js';
 import { calculateFDRPriority } from '../services/prioritizationService.js';
 import { checkForDuplicateFDR } from '../services/duplicateService.js';
@@ -22,14 +22,29 @@ export async function getFDRs(req: AuthRequest, res: Response): Promise<void> {
     } = req.query;
 
     const query: any = {};
+    const scopedIds = await getScopedInstitutionIds(user);
 
-    // Data isolation
-    if (user.role === 'institution') {
-      if (!user.institutionId) {
-        res.status(200).json({ success: true, fdrs: [], total: 0 });
+    if (scopedIds !== null) {
+      if (scopedIds.length === 0) {
+        res.status(200).json({ success: true, fdrs: [], total: 0, page: 1, totalPages: 0 });
         return;
       }
-      query.institutionId = user.institutionId;
+
+      if (user.role === 'institution') {
+        query.institutionId = user.institutionId;
+      } else if (user.role === 'trust') {
+        // If trustee specifies an institutionId, ensure it belongs to their trust
+        if (institutionId) {
+          const isAllowed = scopedIds.some(id => id.toString() === institutionId.toString());
+          if (!isAllowed) {
+            res.status(403).json({ success: false, message: 'Forbidden: Selected institution does not belong to your trust.' });
+            return;
+          }
+          query.institutionId = institutionId;
+        } else {
+          query.institutionId = { $in: scopedIds };
+        }
+      }
     } else if (institutionId) {
       query.institutionId = institutionId;
     }
@@ -102,7 +117,8 @@ export async function getFDRById(req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    if (!enforceInstitutionScope(req, res, fdr.institutionId._id.toString())) {
+    const isScoped = await enforceInstitutionScope(req, res, fdr.institutionId._id.toString());
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied to this FDR record.' });
       return;
     }
@@ -142,11 +158,22 @@ export async function createFDR(req: AuthRequest, res: Response): Promise<void> 
       remarks,
     } = req.body;
 
+    if (user.role === 'trust') {
+      res.status(403).json({ success: false, message: 'Forbidden: Trustees have read-only oversight; FDRs must be registered by the respective technical institution.' });
+      return;
+    }
+
     // Check authorization: if institution user, must match their assigned institution
     const targetInstId = user.role === 'institution' ? user.institutionId?.toString() : institutionId;
 
     if (!targetInstId) {
       res.status(400).json({ success: false, message: 'Institution ID is required.' });
+      return;
+    }
+
+    const isScoped = await enforceInstitutionScope(req, res, targetInstId);
+    if (!isScoped) {
+      res.status(403).json({ success: false, message: 'Forbidden: You cannot register an FDR for another institution.' });
       return;
     }
 
@@ -158,7 +185,6 @@ export async function createFDR(req: AuthRequest, res: Response): Promise<void> 
     // Check for duplicate FDR
     const duplicateCheck = await checkForDuplicateFDR(fdrNumber, bankName);
     if (duplicateCheck.isDuplicate && duplicateCheck.matchedFdrs.length > 0) {
-      // Return 409 if exact duplicate exists under same bank
       const exactMatch = duplicateCheck.matchedFdrs.some(m => m.bankName.toLowerCase() === bankName.toLowerCase());
       if (exactMatch) {
         res.status(409).json({
@@ -228,7 +254,13 @@ export async function createFDR(req: AuthRequest, res: Response): Promise<void> 
 
 export async function updateFDR(req: AuthRequest, res: Response): Promise<void> {
   try {
+    const user = req.user!;
     const { id } = req.params;
+
+    if (user.role === 'trust') {
+      res.status(403).json({ success: false, message: 'Forbidden: Trustees have read-only oversight to FDR records.' });
+      return;
+    }
 
     const fdr = await FDR.findById(id);
     if (!fdr) {
@@ -236,9 +268,22 @@ export async function updateFDR(req: AuthRequest, res: Response): Promise<void> 
       return;
     }
 
-    if (!enforceInstitutionScope(req, res, fdr.institutionId.toString())) {
+    const isScoped = await enforceInstitutionScope(req, res, fdr.institutionId.toString());
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied.' });
       return;
+    }
+
+    // Role-specific field protection
+    if (user.role === 'institution') {
+      // Disallow institution setting or modifying verificationStatus
+      if ('verificationStatus' in req.body) {
+        res.status(403).json({ success: false, message: 'Forbidden: Technical Institutions cannot self-verify or modify verification status.' });
+        return;
+      }
+      delete req.body.priorityScore;
+      delete req.body.priorityReason;
+      delete req.body.scrutinyObservations;
     }
 
     const prev = fdr.toObject();
@@ -290,7 +335,7 @@ export async function addScrutinyObservation(req: AuthRequest, res: Response): P
     const prevStatus = fdr.verificationStatus;
 
     fdr.scrutinyObservations.push({
-      officerId: user._id as any,
+      officerId: user._id,
       officerName: user.name,
       observation,
       createdAt: new Date(),
@@ -313,50 +358,43 @@ export async function addScrutinyObservation(req: AuthRequest, res: Response): P
       entityId: fdr._id.toString(),
       institutionId: fdr.institutionId,
       previousValues: { verificationStatus: prevStatus },
-      newValues: { observation, verificationStatus: fdr.verificationStatus },
+      newValues: { verificationStatus: fdr.verificationStatus, observation },
     });
 
     // Notify institution
     await sendNotification({
+      targetRole: 'institution',
       institutionId: fdr.institutionId,
       type: 'Verification Needed',
       title: `Scrutiny Observation Added: ${fdr.fdrNumber}`,
-      message: `An AICTE scrutiny observation was added for FDR ${fdr.fdrNumber}: "${observation}". Status: ${fdr.verificationStatus}`,
+      message: `AICTE Scrutiny Officer added an observation: "${observation.slice(0, 80)}...". Status is now ${fdr.verificationStatus}.`,
       relatedEntityType: 'FDR',
       relatedEntityId: fdr._id,
-      priority: 'high',
+      priority: verificationStatus === 'Rejected' ? 'high' : 'medium',
     });
 
     res.json({
       success: true,
-      message: 'Scrutiny observation recorded successfully.',
+      message: 'Scrutiny observation logged successfully.',
       fdr,
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message || 'Error recording observation.' });
+    res.status(500).json({ success: false, message: error.message || 'Error logging observation.' });
   }
 }
 
 export async function checkDuplicate(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const { fdrNumber, bankName, excludeId } = req.query;
+    const { fdrNumber, bankName } = req.query;
 
     if (!fdrNumber || !bankName) {
       res.status(400).json({ success: false, message: 'fdrNumber and bankName query parameters are required.' });
       return;
     }
 
-    const result = await checkForDuplicateFDR(
-      fdrNumber as string,
-      bankName as string,
-      excludeId as string
-    );
-
-    res.json({
-      success: true,
-      ...result,
-    });
+    const result = await checkForDuplicateFDR(fdrNumber as string, bankName as string);
+    res.json({ success: true, result });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message || 'Error performing duplicate check.' });
+    res.status(500).json({ success: false, message: error.message || 'Error checking for duplicate FDR.' });
   }
 }

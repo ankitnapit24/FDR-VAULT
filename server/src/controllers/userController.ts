@@ -28,7 +28,7 @@ export async function getUsers(req: AuthRequest, res: Response): Promise<void> {
 
 export async function createUser(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const { name, email, password, role, institutionId, designation, phone } = req.body;
+    const { name, email, password, role, institutionId, trustId, designation, phone } = req.body;
 
     if (!name || !email || !password || !role) {
       res.status(400).json({ success: false, message: 'Name, email, password, and role are required.' });
@@ -37,6 +37,11 @@ export async function createUser(req: AuthRequest, res: Response): Promise<void>
 
     if (role === 'institution' && !institutionId) {
       res.status(400).json({ success: false, message: 'Institution association is required for institution user.' });
+      return;
+    }
+
+    if (role === 'trust' && !trustId) {
+      res.status(400).json({ success: false, message: 'Trust association is required for trustee user.' });
       return;
     }
 
@@ -54,6 +59,7 @@ export async function createUser(req: AuthRequest, res: Response): Promise<void>
       passwordHash,
       role,
       institutionId: role === 'institution' ? institutionId : null,
+      trustId: role === 'trust' ? trustId : null,
       designation: designation || '',
       phone: phone || '',
       isActive: true,

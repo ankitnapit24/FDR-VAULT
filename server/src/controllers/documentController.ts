@@ -27,9 +27,15 @@ export async function uploadDocument(req: AuthRequest, res: Response): Promise<v
     const targetInstId = user.role === 'institution' ? user.institutionId?.toString() : institutionId;
 
     if (!targetInstId) {
-      // Remove uploaded file if validation fails
-      fs.unlinkSync(file.path);
+      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
       res.status(400).json({ success: false, message: 'Institution ID is required.' });
+      return;
+    }
+
+    const isScoped = await enforceInstitutionScope(req, res, targetInstId);
+    if (!isScoped) {
+      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      res.status(403).json({ success: false, message: 'Forbidden: You cannot upload documents for this institution.' });
       return;
     }
 
@@ -145,7 +151,8 @@ export async function getDocumentMetadata(req: AuthRequest, res: Response): Prom
       return;
     }
 
-    if (!enforceInstitutionScope(req, res, doc.institutionId._id.toString())) {
+    const isScoped = await enforceInstitutionScope(req, res, doc.institutionId._id.toString());
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied.' });
       return;
     }
@@ -166,7 +173,8 @@ export async function downloadDocument(req: AuthRequest, res: Response): Promise
       return;
     }
 
-    if (!enforceInstitutionScope(req, res, doc.institutionId.toString())) {
+    const isScoped = await enforceInstitutionScope(req, res, doc.institutionId.toString());
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied to this document.' });
       return;
     }
@@ -284,7 +292,8 @@ export async function getDocumentIntegrity(req: AuthRequest, res: Response): Pro
       return;
     }
 
-    if (!enforceInstitutionScope(req, res, doc.institutionId.toString())) {
+    const isScoped = await enforceInstitutionScope(req, res, doc.institutionId.toString());
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied.' });
       return;
     }

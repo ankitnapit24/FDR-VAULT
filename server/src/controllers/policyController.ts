@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { PolicyRule } from '../models/PolicyRule.js';
-import { AuthRequest } from '../middleware/authMiddleware.js';
+import { AuthRequest, enforceInstitutionScope } from '../middleware/authMiddleware.js';
 import { logAudit } from '../middleware/auditMiddleware.js';
 import { calculateDepositAdequacy } from '../services/policyAdequacyService.js';
 
@@ -19,6 +19,15 @@ export async function getDepositAdequacy(req: AuthRequest, res: Response): Promi
       ? req.params.institutionId[0]
       : req.params.institutionId;
     const { version } = req.query;
+
+    const isScoped = await enforceInstitutionScope(req, res, institutionId);
+    if (!isScoped) {
+      res.status(403).json({
+        success: false,
+        message: 'Forbidden: Access denied to calculate deposit adequacy for this institution.',
+      });
+      return;
+    }
 
     const result = await calculateDepositAdequacy(institutionId, version as string | undefined);
     res.json({ success: true, adequacy: result });

@@ -14,7 +14,9 @@ export async function login(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() }).populate('institutionId');
+    const user = await User.findOne({ email: email.toLowerCase().trim() })
+      .populate('institutionId')
+      .populate('trustId');
     if (!user) {
       res.status(401).json({ success: false, message: 'Invalid email or password.' });
       return;
@@ -32,7 +34,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     }
 
     const token = jwt.sign(
-      { id: user._id, role: user.role, institutionId: user.institutionId },
+      { id: user._id, role: user.role, institutionId: user.institutionId, trustId: user.trustId },
       env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -57,6 +59,9 @@ export async function login(req: Request, res: Response): Promise<void> {
         role: user.role,
         designation: user.designation,
         institution: user.institutionId,
+        institutionId: (user.institutionId as any)?._id || user.institutionId,
+        trust: user.trustId,
+        trustId: (user.trustId as any)?._id || user.trustId,
       },
     });
   } catch (error: any) {
@@ -71,7 +76,9 @@ export async function getCurrentUser(req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    const user = await User.findById(req.user._id).populate('institutionId');
+    const user = await User.findById(req.user._id)
+      .populate('institutionId')
+      .populate('trustId');
     if (!user) {
       res.status(404).json({ success: false, message: 'User not found.' });
       return;
@@ -87,6 +94,9 @@ export async function getCurrentUser(req: AuthRequest, res: Response): Promise<v
         designation: user.designation,
         phone: user.phone,
         institution: user.institutionId,
+        institutionId: (user.institutionId as any)?._id || user.institutionId,
+        trust: user.trustId,
+        trustId: (user.trustId as any)?._id || user.trustId,
       },
     });
   } catch (error: any) {

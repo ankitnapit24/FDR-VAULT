@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { RenewalRequest } from '../models/RenewalRequest.js';
 import { FDR } from '../models/FDR.js';
-import { AuthRequest, enforceInstitutionScope } from '../middleware/authMiddleware.js';
+import { AuthRequest, enforceInstitutionScope, getScopedInstitutionIds } from '../middleware/authMiddleware.js';
 import { logAudit } from '../middleware/auditMiddleware.js';
 import { sendNotification } from '../services/notificationService.js';
 
@@ -11,12 +11,13 @@ export async function getRenewalRequests(req: AuthRequest, res: Response): Promi
     const { status, page = '1', limit = '10' } = req.query;
 
     const query: any = {};
-    if (user.role === 'institution') {
-      if (!user.institutionId) {
-        res.status(200).json({ success: true, renewals: [], total: 0 });
+    const scopedIds = await getScopedInstitutionIds(user);
+    if (scopedIds !== null) {
+      if (scopedIds.length === 0) {
+        res.status(200).json({ success: true, renewals: [], total: 0, page: 1, totalPages: 0 });
         return;
       }
-      query.institutionId = user.institutionId;
+      query.institutionId = { $in: scopedIds };
     }
 
     if (status) {
@@ -68,7 +69,8 @@ export async function getRenewalRequestById(req: AuthRequest, res: Response): Pr
       return;
     }
 
-    if (!enforceInstitutionScope(req, res, renewal.institutionId._id.toString())) {
+    const isScoped = await enforceInstitutionScope(req, res, renewal.institutionId._id.toString());
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied.' });
       return;
     }
@@ -95,7 +97,8 @@ export async function createRenewalRequest(req: AuthRequest, res: Response): Pro
       return;
     }
 
-    if (!enforceInstitutionScope(req, res, existingFdr.institutionId.toString())) {
+    const isScoped = await enforceInstitutionScope(req, res, existingFdr.institutionId.toString());
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied.' });
       return;
     }

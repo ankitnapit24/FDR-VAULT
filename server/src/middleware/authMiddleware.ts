@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import { env } from '../config/env.js';
 import { User, IUser, UserRole } from '../models/User.js';
+import { Institution } from '../models/Institution.js';
 
 export interface AuthRequest extends Request {
   user?: IUser;
@@ -52,22 +54,68 @@ export function authorizeRoles(...allowedRoles: UserRole[]) {
   };
 }
 
-export function enforceInstitutionScope(
+/**
+ * Returns the list of institution IDs allowed for the authenticated user:
+ * - Admin / Officer: null (unrestricted)
+ * - Institution: [user.institutionId]
+ * - Trustee: all institutions associated with user.trustId
+ */
+export async function getScopedInstitutionIds(user: IUser): Promise<mongoose.Types.ObjectId[] | null> {
+  if (user.role === 'admin' || user.role === 'officer') {
+    return null; // Unrestricted access
+  }
+  if (user.role === 'institution') {
+    return user.institutionId ? [user.institutionId] : [];
+  }
+  if (user.role === 'trust') {
+    if (!user.trustId) return [];
+    const ids = await Institution.find({ trustId: user.trustId }).distinct('_id');
+    return ids as mongoose.Types.ObjectId[];
+  }
+  return [];
+}
+
+/**
+ * Constructs a MongoDB query filter scoping records by institution:
+ * - Admin / Officer: {}
+ * - Institution: { [fieldName]: user.institutionId }
+ * - Trustee: { [fieldName]: { $in: [...] } }
+ */
+export async function getScopedInstitutionQuery(user: IUser, fieldName = 'institutionId'): Promise<any> {
+  const scopedIds = await getScopedInstitutionIds(user);
+  if (scopedIds === null) {
+    return {};
+  }
+  if (scopedIds.length === 1 && user.role === 'institution') {
+    return { [fieldName]: scopedIds[0] };
+  }
+  return { [fieldName]: { $in: scopedIds } };
+}
+
+/**
+ * Validates whether the user is authorized to view or mutate a specific institution's data:
+ * - Admin / Officer: true
+ * - Institution: true iff targetId matches user.institutionId
+ * - Trustee: true iff targetId belongs to user.trustId
+ */
+export async function enforceInstitutionScope(
   req: AuthRequest,
-  res: Response,
-  targetInstitutionId: string | undefined
-): boolean {
-  if (!req.user) return false;
-  // Admin and AICTE officers can access all institutions
+  _res: Response,
+  targetInstitutionId: string | mongoose.Types.ObjectId | undefined
+): Promise<boolean> {
+  if (!req.user || !targetInstitutionId) return false;
   if (req.user.role === 'admin' || req.user.role === 'officer') {
     return true;
   }
-  // Institution user can only access their assigned institution
+  const targetIdStr = targetInstitutionId.toString();
   if (req.user.role === 'institution') {
-    if (!req.user.institutionId || !targetInstitutionId) {
-      return false;
-    }
-    return req.user.institutionId.toString() === targetInstitutionId.toString();
+    if (!req.user.institutionId) return false;
+    return req.user.institutionId.toString() === targetIdStr;
+  }
+  if (req.user.role === 'trust') {
+    if (!req.user.trustId) return false;
+    const exists = await Institution.exists({ _id: targetInstitutionId, trustId: req.user.trustId });
+    return !!exists;
   }
   return false;
 }

@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { getAuditLogs, verifyAuditLedger } from '../controllers/auditController.js';
-import { authenticate } from '../middleware/authMiddleware.js';
+import { authenticate, authorizeRoles } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-router.use(authenticate);
+// Internal immutable audit logs are restricted to AICTE Admin & Scrutiny Officers
+router.use(authenticate, authorizeRoles('admin', 'officer'));
 
 router.get('/verify-integrity', verifyAuditLedger);
 router.get('/', getAuditLogs);

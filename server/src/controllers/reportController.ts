@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { FDR } from '../models/FDR.js';
 import { RefundRequest } from '../models/RefundRequest.js';
 import { RenewalRequest } from '../models/RenewalRequest.js';
-import { AuthRequest } from '../middleware/authMiddleware.js';
+import { AuthRequest, getScopedInstitutionIds } from '../middleware/authMiddleware.js';
 
 function formatCSV(rows: any[], headers: string[]): string {
   const headerLine = headers.join(',');
@@ -24,12 +24,13 @@ export async function getFDRReport(req: AuthRequest, res: Response): Promise<voi
     const { status, bankName, format } = req.query;
 
     const query: any = {};
-    if (user.role === 'institution') {
-      if (!user.institutionId) {
+    const scopedIds = await getScopedInstitutionIds(user);
+    if (scopedIds !== null) {
+      if (scopedIds.length === 0) {
         res.status(200).json({ success: true, data: [] });
         return;
       }
-      query.institutionId = user.institutionId;
+      query.institutionId = { $in: scopedIds };
     }
 
     if (status) query.currentStatus = status;
@@ -90,12 +91,13 @@ export async function getMaturityReport(req: AuthRequest, res: Response): Promis
     const { timeframe = '60', format } = req.query;
 
     const query: any = {};
-    if (user.role === 'institution') {
-      if (!user.institutionId) {
+    const scopedIds = await getScopedInstitutionIds(user);
+    if (scopedIds !== null) {
+      if (scopedIds.length === 0) {
         res.status(200).json({ success: true, data: [] });
         return;
       }
-      query.institutionId = user.institutionId;
+      query.institutionId = { $in: scopedIds };
     }
 
     const days = parseInt(timeframe as string, 10);
@@ -170,12 +172,13 @@ export async function getOverdueReport(req: AuthRequest, res: Response): Promise
       ],
     };
 
-    if (user.role === 'institution') {
-      if (!user.institutionId) {
+    const scopedIds = await getScopedInstitutionIds(user);
+    if (scopedIds !== null) {
+      if (scopedIds.length === 0) {
         res.status(200).json({ success: true, data: [] });
         return;
       }
-      fdrQuery.institutionId = user.institutionId;
+      fdrQuery.institutionId = { $in: scopedIds };
     }
 
     const overdueFdrs = await FDR.find(fdrQuery)

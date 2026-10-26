@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { Institution } from '../models/Institution.js';
 import { FDR } from '../models/FDR.js';
-import { AuthRequest, enforceInstitutionScope } from '../middleware/authMiddleware.js';
+import { AuthRequest, enforceInstitutionScope, getScopedInstitutionIds } from '../middleware/authMiddleware.js';
 import { logAudit } from '../middleware/auditMiddleware.js';
 
 export async function getInstitutions(req: AuthRequest, res: Response): Promise<void> {
@@ -10,14 +10,14 @@ export async function getInstitutions(req: AuthRequest, res: Response): Promise<
     const { search, type, status, page = '1', limit = '10' } = req.query;
 
     const query: any = {};
+    const scopedIds = await getScopedInstitutionIds(user);
 
-    // Scope check: Institution user can only see their own
-    if (user.role === 'institution') {
-      if (!user.institutionId) {
-        res.status(200).json({ success: true, institutions: [], total: 0 });
+    if (scopedIds !== null) {
+      if (scopedIds.length === 0) {
+        res.status(200).json({ success: true, institutions: [], total: 0, page: 1, totalPages: 0 });
         return;
       }
-      query._id = user.institutionId;
+      query._id = { $in: scopedIds };
     }
 
     if (search) {
@@ -90,7 +90,8 @@ export async function getInstitutionById(req: AuthRequest, res: Response): Promi
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
-    if (!enforceInstitutionScope(req, res, id)) {
+    const isScoped = await enforceInstitutionScope(req, res, id);
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied to this institution profile.' });
       return;
     }
@@ -126,30 +127,48 @@ export async function getInstitutionById(req: AuthRequest, res: Response): Promi
 
 export async function createInstitution(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const { institutionCode, name, type, address, contactEmail, contactPhone, approvedIntake, establishedYear } = req.body;
-
-    if (!institutionCode || !name || !contactEmail || !address?.city || !address?.state) {
-      res.status(400).json({ success: false, message: 'Institution code, name, contact email, and city/state are required.' });
+    if (req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, message: 'Forbidden: Only AICTE System Administrators can register institutions.' });
       return;
     }
 
-    const existing = await Institution.findOne({ institutionCode: institutionCode.toUpperCase().trim() });
+    const {
+      institutionCode,
+      name,
+      type,
+      address,
+      contactEmail,
+      contactPhone,
+      approvedIntake,
+      establishedYear,
+      trustId,
+    } = req.body;
+
+    if (!institutionCode || !name || !contactEmail || !address?.city || !address?.state || !address?.pincode) {
+      res.status(400).json({ success: false, message: 'Institution code, name, email, and address are required.' });
+      return;
+    }
+
+    const existing = await Institution.findOne({ institutionCode: institutionCode.toUpperCase() });
     if (existing) {
-      res.status(409).json({ success: false, message: 'An institution with this code already exists.' });
+      res.status(409).json({ success: false, message: `Institution with code ${institutionCode} already exists.` });
       return;
     }
 
-    const newInst = await Institution.create({
+    const newInst = new Institution({
       institutionCode: institutionCode.toUpperCase().trim(),
       name: name.trim(),
       type: type || 'Engineering',
       address,
       contactEmail: contactEmail.toLowerCase().trim(),
-      contactPhone,
+      contactPhone: contactPhone || '',
       approvedIntake: approvedIntake || 0,
-      establishedYear: establishedYear || 2010,
+      establishedYear: establishedYear || 2000,
+      trustId: trustId || null,
       status: 'Active',
     });
+
+    await newInst.save();
 
     await logAudit({
       req,
@@ -172,14 +191,14 @@ export async function createInstitution(req: AuthRequest, res: Response): Promis
 
 export async function updateInstitution(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-
-    if (!enforceInstitutionScope(req, res, id)) {
-      res.status(403).json({ success: false, message: 'Access denied.' });
+    if (req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, message: 'Forbidden: Only AICTE System Administrators can update institutional regulatory records.' });
       return;
     }
 
+    const { id } = req.params;
     const inst = await Institution.findById(id);
+
     if (!inst) {
       res.status(404).json({ success: false, message: 'Institution not found.' });
       return;
@@ -201,7 +220,7 @@ export async function updateInstitution(req: AuthRequest, res: Response): Promis
 
     res.json({
       success: true,
-      message: 'Institution updated successfully.',
+      message: 'Institution profile updated successfully.',
       institution: inst,
     });
   } catch (error: any) {

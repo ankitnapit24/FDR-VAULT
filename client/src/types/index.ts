@@ -11,8 +11,14 @@ export interface User {
     _id: string;
     name: string;
     institutionCode: string;
-  };
-  trustId?: string;
+  } | null;
+  institutionId?: string | null;
+  trust?: {
+    _id: string;
+    trustName: string;
+    registrationNumber: string;
+  } | null;
+  trustId?: string | null;
 }
 
 export interface Trust {

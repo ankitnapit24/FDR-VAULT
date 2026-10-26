@@ -7,9 +7,18 @@ import { getTrustConsolidatedExposure } from '../services/trustExposureService.j
 export async function getTrusts(req: AuthRequest, res: Response): Promise<void> {
   try {
     const user = req.user!;
+    if (user.role === 'institution') {
+      res.status(403).json({ success: false, message: 'Forbidden: Technical institutions do not have access to trust portfolios.' });
+      return;
+    }
+
     const query: any = {};
 
-    if (user.role === 'trust' && user.trustId) {
+    if (user.role === 'trust') {
+      if (!user.trustId) {
+        res.status(200).json({ success: true, trusts: [] });
+        return;
+      }
       query._id = user.trustId;
     }
 
@@ -28,7 +37,12 @@ export async function getTrustExposure(req: AuthRequest, res: Response): Promise
     const user = req.user!;
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
-    if (user.role === 'trust' && user.trustId && user.trustId.toString() !== id) {
+    if (user.role === 'institution') {
+      res.status(403).json({ success: false, message: 'Forbidden: Technical institutions do not have access to trust exposure.' });
+      return;
+    }
+
+    if (user.role === 'trust' && (!user.trustId || user.trustId.toString() !== id)) {
       res.status(403).json({ success: false, message: 'Forbidden: You can only access your assigned trust dossier.' });
       return;
     }

@@ -13,7 +13,7 @@ router.use(authenticate);
 
 router.get('/', getInstitutions);
 router.get('/:id', getInstitutionById);
-router.post('/', authorizeRoles('admin', 'officer'), createInstitution);
-router.patch('/:id', authorizeRoles('admin', 'officer'), updateInstitution);
+router.post('/', authorizeRoles('admin'), createInstitution);
+router.patch('/:id', authorizeRoles('admin'), updateInstitution);
 
 export default router;

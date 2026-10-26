@@ -211,6 +211,17 @@ export async function seedDatabase(): Promise<void> {
     isActive: true,
   });
 
+  const trustUser2 = await User.create({
+    name: 'Dr. K. Swaminathan (South Trust President)',
+    email: 'trustee.south@southtrust.org',
+    passwordHash: trustPass,
+    role: 'trust',
+    trustId: trustSouth._id,
+    designation: 'Trust President, South India Educational & Research Foundation',
+    phone: '+91 94440 33445',
+    isActive: true,
+  });
+
   console.log('[Seed] Created demo users with roles Admin, Officer, Institution, and Trust.');
 
   // 3. Create Sample FDRs

@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { RefundRequest } from '../models/RefundRequest.js';
 import { FDR } from '../models/FDR.js';
-import { AuthRequest, enforceInstitutionScope } from '../middleware/authMiddleware.js';
+import { AuthRequest, enforceInstitutionScope, getScopedInstitutionIds } from '../middleware/authMiddleware.js';
 import { logAudit } from '../middleware/auditMiddleware.js';
 import { sendNotification } from '../services/notificationService.js';
 import {
@@ -17,12 +17,13 @@ export async function getRefundRequests(req: AuthRequest, res: Response): Promis
     const { status, page = '1', limit = '10' } = req.query;
 
     const query: any = {};
-    if (user.role === 'institution') {
-      if (!user.institutionId) {
-        res.status(200).json({ success: true, refunds: [], total: 0 });
+    const scopedIds = await getScopedInstitutionIds(user);
+    if (scopedIds !== null) {
+      if (scopedIds.length === 0) {
+        res.status(200).json({ success: true, refunds: [], total: 0, page: 1, totalPages: 0 });
         return;
       }
-      query.institutionId = user.institutionId;
+      query.institutionId = { $in: scopedIds };
     }
 
     if (status) {
@@ -72,7 +73,8 @@ export async function getRefundRequestById(req: AuthRequest, res: Response): Pro
       return;
     }
 
-    if (!enforceInstitutionScope(req, res, refund.institutionId._id.toString())) {
+    const isScoped = await enforceInstitutionScope(req, res, refund.institutionId._id.toString());
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied.' });
       return;
     }
@@ -102,7 +104,8 @@ export async function createRefundRequest(req: AuthRequest, res: Response): Prom
       return;
     }
 
-    if (!enforceInstitutionScope(req, res, fdr.institutionId.toString())) {
+    const isScoped = await enforceInstitutionScope(req, res, fdr.institutionId.toString());
+    if (!isScoped) {
       res.status(403).json({ success: false, message: 'Access denied.' });
       return;
     }

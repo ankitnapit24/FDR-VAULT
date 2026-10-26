@@ -4,7 +4,7 @@ import { authenticate, authorizeRoles } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-router.use(authenticate);
+router.use(authenticate, authorizeRoles('admin', 'officer'));
 
 router.get('/', getSettings);
 router.patch('/:key', authorizeRoles('admin'), updateSetting);

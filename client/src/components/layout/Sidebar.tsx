@@ -26,27 +26,93 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { user, hasRole } = useAuth();
+  const { user } = useAuth();
 
-  const navItems = [
-    { to: '/', label: 'Overview', icon: LayoutDashboard, exact: true },
-    { to: '/institutions', label: 'Institutions', icon: Building2 },
-    { to: '/fdrs', label: 'FDR Records', icon: FileSpreadsheet },
-    ...(hasRole('admin', 'officer')
-      ? [{ to: '/documents/verification-queue', label: 'Document Verification', icon: FileCheck }]
-      : []),
-    { to: '/maturity-schedule', label: 'Maturity & Renewals', icon: CalendarClock },
-    { to: '/renewals', label: 'Renewal Requests', icon: RotateCcw },
-    { to: '/refunds', label: 'Refund Requests', icon: CreditCard },
-    { to: '/bank-verification', label: 'Bank Verification Hub', icon: Landmark },
-    { to: '/trust-exposure', label: 'Trust Exposure', icon: Building },
-    { to: '/policies', label: 'Policy & Adequacy', icon: Scale },
-    { to: '/notifications', label: 'Alerts & Tasks', icon: Bell },
-    { to: '/reports', label: 'Reports & Analytics', icon: BarChart3 },
-    { to: '/audit-logs', label: 'Audit Logs', icon: History },
-    ...(hasRole('admin') ? [{ to: '/users', label: 'User Management', icon: Users }] : []),
-    { to: '/settings', label: 'Settings', icon: Settings },
-  ];
+  const getRoleHeader = () => {
+    switch (user?.role) {
+      case 'admin':
+        return 'AICTE Central Administration';
+      case 'officer':
+        return 'AICTE Scrutiny Desk';
+      case 'institution':
+        return 'Institution Portal';
+      case 'trust':
+        return 'Trust Oversight Panel';
+      default:
+        return 'Portal Navigation';
+    }
+  };
+
+  const getNavItems = () => {
+    const role = user?.role;
+    if (role === 'admin') {
+      return [
+        { to: '/', label: 'Overview', icon: LayoutDashboard, exact: true },
+        { to: '/institutions', label: 'Technical Institutions', icon: Building2 },
+        { to: '/fdrs', label: 'FDR Repository', icon: FileSpreadsheet },
+        { to: '/documents/verification-queue', label: 'Document Verification', icon: FileCheck },
+        { to: '/maturity-schedule', label: 'Maturity Horizons', icon: CalendarClock },
+        { to: '/renewals', label: 'Renewal Workflows', icon: RotateCcw },
+        { to: '/refunds', label: 'Release & Refunds', icon: CreditCard },
+        { to: '/bank-verification', label: 'Bank Verification Hub', icon: Landmark },
+        { to: '/trust-exposure', label: 'Trust Exposure', icon: Building },
+        { to: '/policies', label: 'Policy & Adequacy', icon: Scale },
+        { to: '/notifications', label: 'Alerts & Notices', icon: Bell },
+        { to: '/reports', label: 'Reports & Analytics', icon: BarChart3 },
+        { to: '/audit-logs', label: 'Audit Logs (Immutable)', icon: History },
+        { to: '/users', label: 'User Administration', icon: Users },
+        { to: '/settings', label: 'System Settings', icon: Settings },
+      ];
+    }
+    if (role === 'officer') {
+      return [
+        { to: '/', label: 'Scrutiny Desk', icon: LayoutDashboard, exact: true },
+        { to: '/documents/verification-queue', label: 'Verification Queue', icon: FileCheck },
+        { to: '/fdrs', label: 'FDR Records', icon: FileSpreadsheet },
+        { to: '/institutions', label: 'Institutions Directory', icon: Building2 },
+        { to: '/maturity-schedule', label: 'Maturity Horizons', icon: CalendarClock },
+        { to: '/renewals', label: 'Renewal Reviews', icon: RotateCcw },
+        { to: '/refunds', label: 'Release Clearances', icon: CreditCard },
+        { to: '/bank-verification', label: 'Bank Verification Hub', icon: Landmark },
+        { to: '/trust-exposure', label: 'Trust Exposure', icon: Building },
+        { to: '/policies', label: 'Policy Compliance', icon: Scale },
+        { to: '/notifications', label: 'Tasks & Alerts', icon: Bell },
+        { to: '/reports', label: 'Regulatory Reports', icon: BarChart3 },
+      ];
+    }
+    if (role === 'institution') {
+      const instId = user?.institutionId || user?.institution?._id;
+      return [
+        { to: '/', label: 'My Dashboard', icon: LayoutDashboard, exact: true },
+        { to: '/fdrs', label: 'My FDR Portfolio', icon: FileSpreadsheet },
+        { to: '/fdrs/register', label: 'Register New FDR', icon: Landmark },
+        { to: '/documents/upload', label: 'Upload Documents', icon: FileCheck },
+        { to: '/maturity-schedule', label: 'Maturity Schedule', icon: CalendarClock },
+        { to: '/renewals', label: 'Renewal Requests', icon: RotateCcw },
+        { to: '/refunds', label: 'Refund & Release', icon: CreditCard },
+        { to: '/policies', label: 'Deposit Adequacy', icon: Scale },
+        ...(instId ? [{ to: `/institutions/${instId}`, label: 'Institution Dossier', icon: Building2 }] : []),
+        { to: '/notifications', label: 'Alerts & Messages', icon: Bell },
+      ];
+    }
+    if (role === 'trust') {
+      return [
+        { to: '/', label: 'Trust Dashboard', icon: LayoutDashboard, exact: true },
+        { to: '/trust-exposure', label: 'Trust Exposure & Risk', icon: Building },
+        { to: '/institutions', label: 'Affiliated Campuses', icon: Building2 },
+        { to: '/fdrs', label: 'Multi-Campus FDRs', icon: FileSpreadsheet },
+        { to: '/maturity-schedule', label: 'Maturity Horizons', icon: CalendarClock },
+        { to: '/renewals', label: 'Trust Renewals', icon: RotateCcw },
+        { to: '/refunds', label: 'Trust Releases', icon: CreditCard },
+        { to: '/policies', label: 'Policy Compliance', icon: Scale },
+        { to: '/notifications', label: 'Alerts & Notices', icon: Bell },
+        { to: '/reports', label: 'Consolidated Reports', icon: BarChart3 },
+      ];
+    }
+    return [{ to: '/', label: 'Overview', icon: LayoutDashboard, exact: true }];
+  };
+
+  const navItems = getNavItems();
 
   return (
     <>
@@ -84,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Navigation */}
         <div className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
           <div className="px-3 pb-2 text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
-            Portal Navigation
+            {getRoleHeader()}
           </div>
           {navItems.map(item => {
             const Icon = item.icon;
