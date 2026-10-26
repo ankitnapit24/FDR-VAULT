@@ -5,6 +5,8 @@ import { User, IUser, UserRole } from '../models/User.js';
 
 export interface AuthRequest extends Request {
   user?: IUser;
+  file?: any;
+  files?: any;
 }
 
 export async function authenticate(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {

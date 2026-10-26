@@ -14,8 +14,8 @@ export const env = {
   MAX_FILE_SIZE_MB: parseInt(process.env.MAX_FILE_SIZE_MB || '10', 10),
   REMINDER_DAYS_BEFORE: (process.env.REMINDER_DAYS_BEFORE || '30,15,7')
     .split(',')
-    .map(d => parseInt(d.trim(), 10))
-    .filter(n => !isNaN(n)),
+    .map((d: string) => parseInt(d.trim(), 10))
+    .filter((n: number) => !isNaN(n)),
   OVERDUE_DAYS_THRESHOLD: parseInt(process.env.OVERDUE_DAYS_THRESHOLD || '14', 10),
   CRON_SCHEDULE: process.env.CRON_SCHEDULE || '0 8 * * *',
   AUTO_SEED: process.env.AUTO_SEED === 'true' || (process.env.NODE_ENV !== 'production' && process.env.AUTO_SEED !== 'false'),

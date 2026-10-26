@@ -11,7 +11,7 @@ services:
     plan: starter
     region: singapore # or oregon / frankfurt
     rootDir: server
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health/ready
     envVars:
@@ -46,7 +46,7 @@ services:
     runtime: static
     plan: free
     rootDir: client
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     staticPublishPath: dist
     routes:
       - type: rewrite

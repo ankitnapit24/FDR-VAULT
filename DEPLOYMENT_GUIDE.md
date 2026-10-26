@@ -41,7 +41,7 @@ git push -u origin main
    - **Region:** `Singapore` (or closest to India)
    - **Root Directory:** `server`
    - **Runtime:** `Node`
-   - **Build Command:** `npm install && npm run build`
+   - **Build Command:** `npm install --include=dev && npm run build`
    - **Start Command:** `npm start`
    - **Instance Type:** `Free` (or `Starter`)
 

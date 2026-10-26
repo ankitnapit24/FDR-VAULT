@@ -10,10 +10,10 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
+  destination: (_req: any, _file: any, cb: any) => {
     cb(null, uploadDir);
   },
-  filename: (_req, file, cb) => {
+  filename: (_req: any, file: any, cb: any) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const randomName = `fdr_doc_${Date.now()}_${crypto.randomBytes(8).toString('hex')}${ext}`;
     cb(null, randomName);
@@ -29,8 +29,8 @@ const allowedMimeTypes = [
 
 const fileFilter = (
   _req: any,
-  file: Express.Multer.File,
-  cb: multer.FileFilterCallback
+  file: any,
+  cb: any
 ) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
