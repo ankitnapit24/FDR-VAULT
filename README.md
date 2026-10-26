@@ -1,4 +1,4 @@
-# FDRFlow — AICTE Security Deposit & FDR Management Portal
+# FDR Vault — AICTE Security Deposit & FDR Management Portal
 
 **AICTE Problem Statement ID:** 26265  
 **Title:** Streamline of Security Deposit / FDR Portal  
@@ -9,9 +9,9 @@
 
 ## 1. Executive Summary
 
-**FDRFlow** is a regulatory compliance and administrative portal built to streamline the entire lifecycle of Security Deposits and Fixed Deposit Receipts (FDRs) maintained by technical institutions under the AICTE Approval Bureau.
+**FDR Vault** is a regulatory compliance and administrative portal built to streamline the entire lifecycle of Security Deposits and Fixed Deposit Receipts (FDRs) maintained by technical institutions under the AICTE Approval Bureau.
 
-FDRFlow replaces fragmented tracking and manual correspondence with an integrated digital workflow:
+FDR Vault replaces fragmented tracking and manual correspondence with an integrated digital workflow:
 1. **Centralized FDR & Institution Repository:** Multi-tenant institution profiles with complete instrument-level history and dual-lien records.
 2. **AI Document Intelligence:** Scans PDF and image FDR receipts to extract instrument numbers, issuing banks, deposit amounts, and dates using OCR.
 3. **Automated Discrepancy Detection:** Flags differences between manually claimed values and bank certificate text for officer scrutiny.

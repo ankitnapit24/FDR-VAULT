@@ -74,7 +74,7 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'UP',
-    name: 'FDRFlow Backend API',
+    name: 'FDR Vault Backend API',
     organization: 'All India Council for Technical Education (AICTE)',
     problemStatementId: 26265,
     timestamp: new Date().toISOString(),

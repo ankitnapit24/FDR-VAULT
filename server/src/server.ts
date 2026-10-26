@@ -22,7 +22,7 @@ async function bootstrap() {
 
     const server = app.listen(env.PORT, () => {
       console.log(`=======================================================`);
-      console.log(` FDRFlow — AICTE Security Deposit & FDR Management Portal`);
+      console.log(` FDR Vault — AICTE Security Deposit & FDR Management Portal`);
       console.log(` Server running on http://localhost:${env.PORT}`);
       console.log(` Environment: ${env.NODE_ENV}`);
       console.log(` Storage Driver: ${env.STORAGE_DRIVER}`);

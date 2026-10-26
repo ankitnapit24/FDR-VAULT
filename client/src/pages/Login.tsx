@@ -42,7 +42,7 @@ export const Login: React.FC = () => {
           </div>
         </div>
         <h2 className="mt-3 text-center text-xl font-bold tracking-tight text-text-primary">
-          FDRFlow
+          FDR Vault
         </h2>
         <p className="text-center text-xs text-text-secondary mt-1">
           All India Council for Technical Education (AICTE)
@@ -85,7 +85,7 @@ export const Login: React.FC = () => {
             </div>
 
             <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
-              Sign In to FDRFlow Portal
+              Sign In to FDR Vault Portal
             </Button>
           </form>
 

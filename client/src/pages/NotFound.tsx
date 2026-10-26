@@ -11,7 +11,7 @@ export const NotFound: React.FC = () => {
       </div>
       <h2 className="text-xl font-bold text-text-primary">404 — Page Not Found</h2>
       <p className="text-xs text-text-secondary mt-1 mb-6">
-        The requested FDRFlow regulatory portal route or document resource does not exist.
+        The requested FDR Vault regulatory portal route or document resource does not exist.
       </p>
       <Link to="/">
         <Button variant="primary">Return to Overview Dashboard</Button>

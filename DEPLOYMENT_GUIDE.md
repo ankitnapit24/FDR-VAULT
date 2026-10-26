@@ -1,7 +1,7 @@
-# FDRFlow — AICTE Security Deposit & FDR Management Portal
+# FDR Vault — AICTE Security Deposit & FDR Management Portal
 ## Complete Cloud Deployment Guide: Render (Backend) + Vercel (Frontend)
 
-This guide walks you step-by-step through deploying **FDRFlow** to production:
+This guide walks you step-by-step through deploying **FDR Vault** to production:
 - **Backend API & Cron Engine:** Deployed on [Render](https://render.com)
 - **Frontend React Portal:** Deployed on [Vercel](https://vercel.com)
 - **Database:** [MongoDB Atlas](https://cloud.mongodb.com) (Already configured & seeded)
@@ -20,12 +20,12 @@ git init
 git add .
 
 # 3. Commit
-git commit -m "feat: complete production-ready FDRFlow AICTE portal"
+git commit -m "feat: complete production-ready FDR Vault AICTE portal"
 
-# 4. Create a new repository on your GitHub account (e.g., https://github.com/your-username/fdrflow)
+# 4. Create a new repository on your GitHub account (e.g., https://github.com/your-username/fdrvault)
 # 5. Link and push to GitHub:
 git branch -M main
-git remote add origin https://github.com/<your-username>/fdrflow.git
+git remote add origin https://github.com/<your-username>/fdrvault.git
 git push -u origin main
 ```
 
@@ -35,9 +35,9 @@ git push -u origin main
 
 1. Log in to [Render Dashboard](https://dashboard.render.com).
 2. Click **New +** → Select **Web Service**.
-3. Connect your GitHub repository (`fdrflow`).
+3. Connect your GitHub repository (`fdrvault`).
 4. Configure the service settings:
-   - **Name:** `fdrflow-api` (or any name you choose)
+   - **Name:** `fdrvault-api` (or any name you choose)
    - **Region:** `Singapore` (or closest to India)
    - **Root Directory:** `server`
    - **Runtime:** `Node`
@@ -60,8 +60,8 @@ git push -u origin main
 
 6. Click **Create Web Service**.
 7. Once deployed, Render will provide your public backend URL, e.g.:
-   `https://fdrflow-api.onrender.com`
-   *(Test it in browser: `https://fdrflow-api.onrender.com/api/health/ready` should return status `READY`)*
+   `https://fdrvault-api.onrender.com`
+   *(Test it in browser: `https://fdrvault-api.onrender.com/api/health/ready` should return status `READY`)*
 
 ---
 
@@ -69,7 +69,7 @@ git push -u origin main
 
 1. Log in to [Vercel Dashboard](https://vercel.com).
 2. Click **Add New...** → **Project**.
-3. Import your GitHub repository (`fdrflow`).
+3. Import your GitHub repository (`fdrvault`).
 4. In the Project Configuration:
    - **Framework Preset:** `Vite`
    - **Root Directory:** Click **Edit** and select `client`
@@ -81,19 +81,19 @@ git push -u origin main
 
    | Key | Value |
    | :--- | :--- |
-   | `VITE_API_BASE_URL` | `https://fdrflow-api.onrender.com/api` *(Replace with your Render URL + `/api`)* |
+   | `VITE_API_BASE_URL` | `https://fdrvault-api.onrender.com/api` *(Replace with your Render URL + `/api`)* |
 
 6. Click **Deploy**.
 7. In ~30 seconds, Vercel will give you your live URL, e.g.:
-   `https://fdrflow.vercel.app`
+   `https://fdrvault.vercel.app`
 
 ---
 
 ### Step 4: (Optional) Lock Down CORS on Render
 
-Once your Vercel URL is live (e.g., `https://fdrflow.vercel.app`), you can optionally restrict CORS on Render:
+Once your Vercel URL is live (e.g., `https://fdrvault.vercel.app`), you can optionally restrict CORS on Render:
 1. Go to your Render Web Service → **Environment**.
-2. Set `CORS_ORIGIN` = `https://fdrflow.vercel.app`
+2. Set `CORS_ORIGIN` = `https://fdrvault.vercel.app`
 3. Click **Save Changes** (Render will auto-redeploy).
 
 ---

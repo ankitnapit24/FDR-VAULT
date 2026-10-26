@@ -1,7 +1,7 @@
 {
-  "name": "fdrflow-server",
+  "name": "fdrvault-server",
   "version": "1.0.0",
-  "description": "FDRFlow Backend - AICTE Security Deposit & FDR Management Portal",
+  "description": "FDR Vault Backend - AICTE Security Deposit & FDR Management Portal",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

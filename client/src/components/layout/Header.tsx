@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
     if (path.startsWith('/audit-logs')) return 'Immutable Audit Trail';
     if (path.startsWith('/users')) return 'User Administration';
     if (path.startsWith('/settings')) return 'System Settings & Thresholds';
-    return 'FDRFlow Portal';
+    return 'FDR Vault Portal';
   };
 
   return (

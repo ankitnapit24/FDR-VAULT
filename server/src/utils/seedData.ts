@@ -19,7 +19,7 @@ import { appendAuditBlock } from '../services/auditLedgerService.js';
 import { getDefaultClearances } from '../services/clearanceService.js';
 
 export async function seedDatabase(): Promise<void> {
-  console.log('[Seed] Starting FDRFlow database seeding...');
+  console.log('[Seed] Starting FDR Vault database seeding...');
   await connectDB();
 
   // Clear existing collections

@@ -70,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
           <div>
             <div className="flex items-center space-x-1.5">
-              <span className="font-bold text-base text-text-primary tracking-tight">FDRFlow</span>
+              <span className="font-bold text-base text-text-primary tracking-tight">FDR Vault</span>
               <span className="text-[10px] font-semibold px-1 py-0.2 bg-aicte-subtle text-aicte rounded border border-[#D0DFEF]">
                 AICTE
               </span>

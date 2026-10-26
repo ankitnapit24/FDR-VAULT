@@ -15,15 +15,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const cached = localStorage.getItem('fdrflow_user');
+    const cached = localStorage.getItem('fdrvault_user') || localStorage.getItem('fdrflow_user');
     return cached ? JSON.parse(cached) : null;
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('fdrflow_token'));
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('fdrvault_token') || localStorage.getItem('fdrflow_token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function verifyAuth() {
-      const storedToken = localStorage.getItem('fdrflow_token');
+      const storedToken = localStorage.getItem('fdrvault_token') || localStorage.getItem('fdrflow_token');
       if (!storedToken) {
         setUser(null);
         setIsLoading(false);
@@ -34,11 +34,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await api.get('/auth/me');
         if (res.data.success && res.data.user) {
           setUser(res.data.user);
-          localStorage.setItem('fdrflow_user', JSON.stringify(res.data.user));
+          localStorage.setItem('fdrvault_user', JSON.stringify(res.data.user));
         }
       } catch (err) {
         setUser(null);
         setToken(null);
+        localStorage.removeItem('fdrvault_token');
+        localStorage.removeItem('fdrvault_user');
         localStorage.removeItem('fdrflow_token');
         localStorage.removeItem('fdrflow_user');
       } finally {
@@ -56,8 +58,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { token: receivedToken, user: receivedUser } = res.data;
         setToken(receivedToken);
         setUser(receivedUser);
-        localStorage.setItem('fdrflow_token', receivedToken);
-        localStorage.setItem('fdrflow_user', JSON.stringify(receivedUser));
+        localStorage.setItem('fdrvault_token', receivedToken);
+        localStorage.setItem('fdrvault_user', JSON.stringify(receivedUser));
         return { success: true };
       }
       return { success: false, message: res.data.message || 'Login failed.' };
@@ -77,6 +79,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setUser(null);
       setToken(null);
+      localStorage.removeItem('fdrvault_token');
+      localStorage.removeItem('fdrvault_user');
       localStorage.removeItem('fdrflow_token');
       localStorage.removeItem('fdrflow_user');
       window.location.href = '/login';
